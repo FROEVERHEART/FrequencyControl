@@ -2,7 +2,6 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-	   xmlns:aop="http://www.springframework.org/schema/aop"
 	   xmlns:tx="http://www.springframework.org/schema/tx"
 	   xmlns:task="http://www.springframework.org/schema/task"
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans 
@@ -11,8 +10,6 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd
            http://www.springframework.org/schema/tx
            http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-           http://www.springframework.org/schema/aop 
-           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
            http://www.springframework.org/schema/task
 		   http://www.springframework.org/schema/task/spring-task-3.0.xsd">
       
@@ -23,35 +20,30 @@
      </bean>
     
      <import resource="classpath:spring-datasource.xml" />
-
-     <context:component-scan base-package="com.cn21.FrequencyControl.util"></context:component-scan>
-	 <context:component-scan base-package="com.cn21.FrequencyControl.service"></context:component-scan>
-     <context:component-scan base-package="com.cn21.FrequencyControl.dao"></context:component-scan>
+    
+	 <context:component-scan base-package="com.cn21.FrequencyControl">
+         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+     </context:component-scan>
       
       <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="configLocation">
             <value>classpath:mybatis-config.xml</value>
         </property>
+
          <property name="dataSource">
             <ref bean="dataSource"/>
         </property>
+
+          <property name="mapperLocations" value="classpath:com/cn21/FrequencyControl/dao/mapper/ExampleMapper.xml"></property>
      </bean>
      <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-	    <property name="basePackage" value="com.cn21.FrequencyControl.dao.mapper" />
+	    <property name="basePackage" value="com.cn21.FrequencyControl.dao" />
 	</bean>
 
 
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
         <property name="dataSource" ref="dataSource"/>
     </bean>
-    <tx:advice id="txAdvice" transaction-manager="transactionManager">
-        <tx:attributes>
-            <tx:method name="*" isolation="READ_COMMITTED" />
-        </tx:attributes>
-    </tx:advice>
-
-    <aop:config>
-        <aop:pointcut id="zfServiceOperation" expression="execution(* com.cn21.FrequencyControl.service..*.*(..))"/>
-        <aop:advisor advice-ref="txAdvice" pointcut-ref="zfServiceOperation"/>
-    </aop:config>
+    
+    <tx:annotation-driven/>
 </beans>
